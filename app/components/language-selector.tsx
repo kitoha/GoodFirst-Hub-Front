@@ -19,14 +19,14 @@ export default function LanguageSelector() {
   };
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-white shadow-sm rounded-md w-full">
-      <Button variant="outline" size="icon" onClick={() => scroll("left")}>
+    <div className="flex items-center justify-center w-full px-4 py-3 overflow-x-auto scrollbar-hide gap-2">
+      <Button variant="ghost" size="icon" onClick={() => scroll("left")}>
         <ChevronLeft className="w-4 h-4" />
       </Button>
 
       <div
         ref={scrollRef}
-        className="flex gap-2 overflow-x-auto scrollbar-hide max-w-[90vw] px-1"
+        className="flex gap-2 overflow-x-auto scrollbar-hide"
       >
         {languages.map((lang) => (
           <Button
@@ -40,7 +40,7 @@ export default function LanguageSelector() {
         ))}
       </div>
 
-      <Button variant="outline" size="icon" onClick={() => scroll("right")}>
+      <Button variant="ghost" size="icon" onClick={() => scroll("right")}>
         <ChevronRight className="w-4 h-4" />
       </Button>
     </div>
