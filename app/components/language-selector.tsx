@@ -1,4 +1,3 @@
-// app/components/language-selector.tsx
 import { useState, useRef } from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";

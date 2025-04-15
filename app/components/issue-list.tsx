@@ -40,7 +40,7 @@ export default function IssueList() {
         const res = await fetchRepositories(page);
         if (!ignore) {
           setRepositories((prev) => [...prev, ...res.content]);
-          setHasMore(!res.last); // 응답에 last: true가 오면 끝
+          setHasMore(!res.last);
         }
       } catch (err) {
         console.error(err);
