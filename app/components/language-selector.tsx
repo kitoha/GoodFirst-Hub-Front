@@ -19,7 +19,7 @@ export default function LanguageSelector() {
   };
 
   return (
-    <div className="flex items-center justify-center w-full px-4 py-3 overflow-x-auto scrollbar-hide gap-2">
+    <div className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-300 rounded-md shadow-sm w-full overflow-x-auto">
       <Button variant="ghost" size="icon" onClick={() => scroll("left")}>
         <ChevronLeft className="w-4 h-4" />
       </Button>

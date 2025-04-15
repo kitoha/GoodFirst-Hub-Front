@@ -5,19 +5,22 @@ import RightSidebar from "~/components/right-sidebar";
 
 export default function IndexPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header />
-      <section className="sticky top-0 z-10 bg-white border-b shadow-sm w-full">
-        <LanguageSelector />
-      </section>
-      <main className="flex-1 px-6 py-8 overflow-y-auto">
-        <div className="flex flex-col lg:flex-row gap-6">
+    <div className="min-h-screen bg-background text-foreground flex justify-center">
+      <div className="w-full max-w-[1800px] border-x border-gray-300 px-6">
+        <Header />
+        <section className="py-4 ">
+          <LanguageSelector />
+        </section>
+        <main className="py-8 flex gap-6">
           <div className="flex-1">
             <IssueList />
           </div>
-          <RightSidebar />
-        </div>
-      </main>
+          <aside className="w-full max-w-xs lg:max-w-sm xl:max-w-md space-y-6">
+            <RightSidebar />
+          </aside>
+        </main>
+      </div>
     </div>
   );
 }
+
