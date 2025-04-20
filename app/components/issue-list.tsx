@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import IssueCard from "./issue-card";
-
-type RepositoryResponse = {
-  content: Repository[];
-  totalPages: number;
-  number: number;
-  last: boolean; 
-};
+import { useFilter } from "~/components/context/FilterContext";
 
 type Repository = {
   id: string;
@@ -18,80 +12,89 @@ type Repository = {
   issueCount: number;
 };
 
-async function fetchRepositories(page: number): Promise<RepositoryResponse> {
-  const res = await fetch(`http://localhost:8080/api/repositories?page=${page}&size=10`);
-  if (!res.ok) {
-    throw new Error("Failed to fetch repositories");
-  }
+type RepositoryResponse = {
+  content: Repository[];
+  last: boolean;
+};
+
+async function fetchRepositories(
+  page: number,
+  languages: string[],
+  labels: string[]
+): Promise<RepositoryResponse> {
+  const params = new URLSearchParams();
+  params.append("page", page.toString());
+  params.append("size", "10");
+  languages.forEach((l) => params.append("language", l));
+  labels.forEach((l) => params.append("label", l));
+
+  const res = await fetch(`/api/repositories?${params.toString()}`);
+  if (!res.ok) throw new Error("Failed to fetch repositories");
   return res.json();
 }
 
 export default function IssueList() {
+  const { selectedLangs, selectedLabels } = useFilter();
   const [page, setPage] = useState(0);
-  const [repositories, setRepositories] = useState<Repository[]>([]);
+  const [repos, setRepos] = useState<Repository[]>([]);
   const [hasMore, setHasMore] = useState(true);
-  const loaderRef = useRef<HTMLDivElement | null>(null);
+  const [loading, setLoading] = useState(false);
+  const loaderRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setPage(0);
+    setRepos([]);
+    setHasMore(true);
+  }, [selectedLangs, selectedLabels]);
 
   useEffect(() => {
     let ignore = false;
-
-    const load = async () => {
-      try {
-        const res = await fetchRepositories(page);
+    setLoading(true);
+    fetchRepositories(page, selectedLangs, selectedLabels)
+      .then((data) => {
         if (!ignore) {
-          setRepositories((prev) => [...prev, ...res.content]);
-          setHasMore(!res.last);
+          setRepos((prev) =>
+            page === 0 ? data.content : [...prev, ...data.content]
+          );
+          setHasMore(!data.last);
         }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    load();
-
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
     return () => {
       ignore = true;
     };
-  }, [page]);
+  }, [page, selectedLangs, selectedLabels]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasMore) {
-          setPage((prev) => prev + 1);
-        }
+    if (!hasMore || loading || repos.length === 0) return;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setPage((p) => p + 1);
       },
-      { threshold: 1 }
+      { rootMargin: "200px", threshold: 0.1 }
     );
-
-    const target = loaderRef.current;
-    if (target) observer.observe(target);
-
-    return () => {
-      if (target) observer.unobserve(target);
-    };
-  }, [hasMore]);
+    loaderRef.current && obs.observe(loaderRef.current);
+    return () => obs.disconnect();
+  }, [hasMore, loading, repos.length]);
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {repositories.map((repo) => (
+        {repos.map((r) => (
           <IssueCard
-            key={repo.id}
-            title={`⭐ ${repo.name}`}
-            repo={`${repo.owner}/${repo.name}`}
-            url={repo.address}
+            key={r.id}
+            title={`⭐ ${r.name}`}
+            repo={`${r.owner}/${r.name}`}
+            url={r.address}
             labels={[
-              {
-                name: repo.primaryLanguage ?? "unknown",
-                color: "3b82f6",
-              },
+              { name: r.primaryLanguage, color: "3b82f6" },
             ]}
-            createdAt={`★ ${repo.issueCount} issues`}
+            createdAt={`★ ${r.issueCount} issues`}
           />
         ))}
       </div>
-      {hasMore && (
+      {hasMore && repos.length > 0 && (
         <div ref={loaderRef} className="h-10" />
       )}
     </div>
