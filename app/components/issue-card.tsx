@@ -27,7 +27,6 @@ export default function IssueCard({
 
   return (
     <Card className="relative hover:shadow-md transition-shadow">
-      {/* 찜 버튼 */}
       <button
         className="absolute top-3 right-3 text-muted-foreground"
         onClick={() => setBookmarked(!bookmarked)}

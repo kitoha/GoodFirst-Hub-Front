@@ -1,4 +1,3 @@
-import { useState } from "react";
 import TopHeader from "~/components/TopHeader";
 import Header from "~/components/header";
 import LanguageSelector from "~/components/language-selector";
@@ -7,10 +6,6 @@ import RightSidebar from "~/components/right-sidebar";
 import Footer from "~/components/footer";
 
 export default function IndexPage() {
-  // 필터 상태
-  const [selectedLangs, setSelectedLangs] = useState<string[]>([]);
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <TopHeader />
