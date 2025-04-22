@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import IssueCard from "./issue-card";
+import IssueModal from "./IssueModal";
 import { useFilter } from "~/components/context/FilterContext";
+import { useIntersectionObserver } from "~/hooks/useIntersectionObserver";
 
 type Repository = {
   id: string;
@@ -8,7 +10,6 @@ type Repository = {
   owner: string;
   address: string;
   primaryLanguage: string;
-  startCount: number;
   issueCount: number;
 };
 
@@ -41,6 +42,10 @@ export default function IssueList() {
   const [loading, setLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRepoId, setSelectedRepoId] = useState<string>("");
+  const [selectedRepoName, setSelectedRepoName] = useState("");
+
   useEffect(() => {
     setPage(0);
     setRepos([]);
@@ -50,6 +55,7 @@ export default function IssueList() {
   useEffect(() => {
     let ignore = false;
     setLoading(true);
+
     fetchRepositories(page, selectedLangs, selectedLabels)
       .then((data) => {
         if (!ignore) {
@@ -61,42 +67,60 @@ export default function IssueList() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+
     return () => {
       ignore = true;
     };
   }, [page, selectedLangs, selectedLabels]);
 
-  useEffect(() => {
-    if (!hasMore || loading || repos.length === 0) return;
-    const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) setPage((p) => p + 1);
-      },
-      { rootMargin: "200px", threshold: 0.1 }
-    );
-    loaderRef.current && obs.observe(loaderRef.current);
-    return () => obs.disconnect();
-  }, [hasMore, loading, repos.length]);
+  useIntersectionObserver({
+    target: loaderRef,
+    onIntersect: () => {
+      if (!loading && hasMore) setPage((p) => p + 1);
+    },
+    enabled: !loading && hasMore && repos.length > 0,
+    rootMargin: "200px",
+  });
+
+  const handleCardClick = (id: string, name: string) => {
+    setSelectedRepoId(id);
+    setSelectedRepoName(name);
+    setModalOpen(true);
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {repos.map((r) => (
-          <IssueCard
-            key={r.id}
-            title={`⭐ ${r.name}`}
-            repo={`${r.owner}/${r.name}`}
-            url={r.address}
-            labels={[
-              { name: r.primaryLanguage, color: "3b82f6" },
-            ]}
-            createdAt={`★ ${r.issueCount} issues`}
-          />
-        ))}
+    <>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {repos.map((r) => (
+            <IssueCard
+              key={r.id}
+              title={`⭐ ${r.name}`}
+              repo={`${r.owner}/${r.name}`}
+              labels={[{ name: r.primaryLanguage, color: "3b82f6" }]}
+              createdAt={`★ ${r.issueCount} issues`}
+              onClick={() => handleCardClick(r.id, `${r.owner}/${r.name}`)}
+            />
+          ))}
+        </div>
+
+        {hasMore && repos.length > 0 && (
+          <div ref={loaderRef} className="h-10" />
+        )}
+
+        {loading && (
+          <p className="text-center text-sm text-muted-foreground">
+            로딩 중…
+          </p>
+        )}
       </div>
-      {hasMore && repos.length > 0 && (
-        <div ref={loaderRef} className="h-10" />
-      )}
-    </div>
+
+      <IssueModal
+        open={modalOpen}
+        repositoryId={selectedRepoId}
+        repositoryName={selectedRepoName}
+        onClose={() => setModalOpen(false)}
+      />
+    </>
   );
 }
