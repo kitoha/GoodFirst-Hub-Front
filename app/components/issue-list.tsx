@@ -114,13 +114,12 @@ export default function IssueList() {
           </p>
         )}
       </div>
-
       <IssueModal
-        open={modalOpen}
-        repositoryId={selectedRepoId}
-        repositoryName={selectedRepoName}
-        onClose={() => setModalOpen(false)}
-      />
+         open={modalOpen}
+         repositoryId={selectedRepoId}
+         repositoryName={selectedRepoName}
+         onClose={() => setModalOpen(false)}
+       />
     </>
   );
 }
