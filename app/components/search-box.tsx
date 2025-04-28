@@ -47,7 +47,6 @@ export default function SearchBox() {
 
   return (
     <div className="relative w-full max-w-md">
-      {/* 인풋 + 아이콘 */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
@@ -56,12 +55,11 @@ export default function SearchBox() {
           onChange={(e) => setKeyword(e.target.value)}
           placeholder="검색어를 입력하세요"
           onFocus={() => setFocused(true)}
-          onBlur={() => setTimeout(() => setFocused(false), 200)} // blur 지연
+          onBlur={() => setTimeout(() => setFocused(false), 200)}
           className="w-full border border-gray-300 rounded-md pl-10 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
 
-      {/* 드롭다운 */}
       {focused && keyword.trim() && (
         <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-auto text-sm">
           {loading && (
